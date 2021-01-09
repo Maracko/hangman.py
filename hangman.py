@@ -41,7 +41,7 @@ def show_status(guessed: "defaultdict[str, int]", lives: int, secret: str) -> No
     print("Lives: {}\n".format(lives))
 
 
-def guess(guessed: "defaultdict[str, int]", lives: int, secret: str) -> int:
+def guess(guessed: "defaultdict[str, int]", secret: str) -> int:
     guess = input("Enter your guess: ")
     if len(guess) > 1 or guess not in string.ascii_letters:
         print("\nPlease enter only one letter!\n")
@@ -163,7 +163,7 @@ def main():
     while True:
         print(hangman(lives, difficulty))
         show_status(guessed, lives, secret)
-        lives += guess(guessed, lives, secret)
+        lives += guess(guessed, secret)
         if is_win(secret, guessed):
             print("Congratulations,you won!!!\n")
             if play_again():
@@ -180,4 +180,5 @@ def main():
                 break
 
 
-main()
+if __name__ == "__main__":
+    main()
