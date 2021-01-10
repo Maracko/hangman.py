@@ -7,6 +7,7 @@ from typing import Tuple
 
 
 def select_secret() -> str:
+    """Will select a random word from dict"""
     secret = ""
     with open("words_dictionary.json") as f:
         wordsDict: "dict[str, int]" = json.load(f)
@@ -16,10 +17,14 @@ def select_secret() -> str:
 
 
 def set_difficulty() -> int:
-    """Sets the ammount of lives you have"""
+    """Sets the difficulty"""
     while True:
-        difficulty = int(input("Enter 1 for normal difficulty, 2 for hard: "))
-        print("\n")
+        difficulty = input("Enter 1 for normal difficulty, 2 for hard: ")
+        try:
+            difficulty = int(difficulty)
+        except:
+            print("Invalid input")
+            continue
         if difficulty == 1:
             return 1
         elif difficulty == 2:
@@ -29,20 +34,24 @@ def set_difficulty() -> int:
 
 
 def set_lives(difficulty) -> int:
+    """Sets the lives variable based on difficulty"""
     return 10 if difficulty == 1 else 5
 
 
 def show_status(guessed: "defaultdict[str, int]", lives: int, secret: str) -> None:
+    """Draws the currently guessed letters"""
     for letter in secret:
         if letter in guessed.keys():
             print(letter, end=" ")
-        print("_", end=" ")
+        else:
+            print("_", end=" ")
     print("\n")
     print("Lives: {}\n".format(lives))
 
 
 def guess(guessed: "defaultdict[str, int]", secret: str) -> int:
-    guess = input("Enter your guess: ")
+    """Prompts the user to guess a new letter"""
+    guess = input("Enter your guess: ").lower()
     if len(guess) > 1 or guess not in string.ascii_letters:
         print("\nPlease enter only one letter!\n")
         return 0
@@ -57,18 +66,22 @@ def guess(guessed: "defaultdict[str, int]", secret: str) -> int:
 
 
 def is_win(secret: str, guessed: "defaultdict[str, int]") -> bool:
+    """Checks if the user has won"""
     return set(secret).issubset(set(guessed.keys()))
 
 
-def game_over(lives: int, secret: str, difficulty: int):
+def game_over(lives: int, secret: str, difficulty: int) -> None:
+    """Game over screen"""
     print(hangman(lives, difficulty))
+    print("Out of lives, better luck next time!")
     print("Correct answer was: ", end="")
     for letter in secret:
         print(letter, end=" ")
-    print("\nOut of lives, better luck next time!")
+    print("\n")
 
 
 def play_again() -> bool:
+    """Returns wether the user wants to play again"""
     print("Do you want to play again?")
     while True:
         play = input("Please enter Y/N: ")
@@ -83,13 +96,15 @@ def play_again() -> bool:
 
 
 def reset() -> Tuple[int, str, "defaultdict[str, int]"]:
-    difficulty = set_difficulty()
+    """Resets the game"""
+    difficulty: int = set_difficulty()
     secret: str = select_secret()
     guessed: "defaultdict[str, int]" = defaultdict(lambda: 0)
     return difficulty, secret, guessed
 
 
-def hangman(lives: int, difficulty: int):
+def hangman(lives: int, difficulty: int) -> str:
+    """Returns the art based on the current ammount of lives"""
     hangman = [
         """
         _______
@@ -155,29 +170,34 @@ def hangman(lives: int, difficulty: int):
     return hangman[-floor(lives / 2) - 1] if difficulty == 1 else hangman[-lives - 1]
 
 
-def main():
+def main() -> None:
+    """Main function"""
     print("Welcome to hangman.py!\n")
     difficulty, secret, guessed = reset()
     lives = set_lives(difficulty)
-    print("Word to guess is {} letters long!\n".format(len(secret)))
+    print("Word to guess is {} letters long!".format(len(secret)))
     while True:
         print(hangman(lives, difficulty))
         show_status(guessed, lives, secret)
         lives += guess(guessed, secret)
         if is_win(secret, guessed):
-            print("Congratulations,you won!!!\n")
+            print("\nCongratulations,you won!!!\n")
+            print("The secret was: ", end="")
+            for letter in secret:
+                print(letter, end=" ")
+            print("\n")
             if play_again():
                 difficulty, secret, guessed = reset()
                 lives = set_lives(difficulty)
                 print("Word to guess is {} letters long!\n".format(len(secret)))
+            break
         elif lives == 0:
             game_over(lives, secret, difficulty)
             if play_again():
                 difficulty, secret, guessed = reset()
                 lives = set_lives(difficulty)
                 print("Word to guess is {} letters long!\n".format(len(secret)))
-            else:
-                break
+            break
 
 
 if __name__ == "__main__":
